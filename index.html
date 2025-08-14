@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>إنقاص الوزن للرجال — نسخة الويب</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  :root{
+    --maxw:1100px;
+    --gap:14px;
+    --gold:#D4AF37;
+    --gold-dark:#b8860b;
+    --bg-dark:#0b0b0d;
+    --card-dark:#0f1113;
+    --muted-dark:#bfb8a6;
+    --alt-bg:#f7fbff;
+    --alt-primary:#0b63a8;
+    --alt-accent:#36a2ff;
+    --card-alt:#ffffff;
+    transition: none;
+  }
+  *{box-sizing:border-box;font-family: "Segoe UI", Tahoma, Arial, sans-serif;}
+  html,body{height:100%;margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,var(--bg-dark) 0%, #070708 100%);
+    color:var(--gold);
+    padding:18px;
+    display:flex;
+    justify-content:center;
+  }
+  .app{width:100%;max-width:var(--maxw)}
+  header{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+  .logo{width:68px;height:68px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));display:flex;align-items:center;justify-content:center;font-weight:800;color:#081116;font-size:20px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+  h1{margin:0;font-size:20px}
+  p.lead{margin:0;color:var(--muted-dark);font-size:13px}
+
+  .top-controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .btn{background:var(--gold);color:#071014;border:0;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,0.4)}
+  .btn.secondary{background:transparent;color:var(--gold);border:1px solid rgba(212,175,55,0.12);box-shadow:none}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted-dark);padding:6px 9px}
+  .small{font-size:12px;color:var(--muted-dark)}
+
+  .main{display:grid;grid-template-columns:1fr 360px;gap:var(--gap)}
+  @media(max-width:980px){ .main{grid-template-columns:1fr} }
+
+  .card{background:linear-gradient(180deg,var(--card-dark),#0b0c0e);padding:14px;border-radius:12px;box-shadow:0 8px 26px rgba(2,6,8,0.6)}
+  .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap}
+  .stat{background:rgba(255,255,255,0.03);padding:10px;border-radius:10px;min-width:120px}
+  .stat .label{font-size:12px;color:var(--muted-dark)}
+  .stat .value{font-weight:800;font-size:18px}
+
+  input[type="number"], input[type="text"], input[type="date"], select{
+    width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--gold);
+  }
+  label{font-size:13px;color:var(--muted-dark);display:block;margin-bottom:6px}
+
+  .controls-row{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* exercises list */
+  .ex-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:640px){ .ex-list{grid-template-columns:1fr} }
+  .exercise{display:flex;gap:10px;align-items:center;border-radius:10px;padding:8px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))}
+  .exercise img{width:110px;height:80px;object-fit:cover;border-radius:8px;flex-shrink:0;border:3px solid rgba(212,175,55,0.12)}
+  .ex-body{flex:1}
+  .ex-body h4{margin:0;font-size:14px}
+  .ex-body p{margin:4px 0 0 0;color:var(--muted-dark);font-size:12px}
+
+  /* right column panels */
+  .panel{margin-bottom:10px}
+  .theme-toggle{display:flex;gap:8px;align-items:center}
+
+  /* timer modal */
+  .overlay{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
+  .modal{background:linear-gradient(180deg,#ffffff 0%,#f7f7f7 100%);color:#061217;padding:20px;border-radius:12px;max-width:520px;width:92%}
+  .modal h3{margin-top:0}
+  .modal .timer-large{font-size:36px;font-weight:800;margin:8px 0}
+
+  footer{color:var(--muted-dark);text-align:center;margin-top:14px;font-size:13px}
+
+  /* alternate theme (light) */
+  .alt {
+    --gold:var(--alt-accent);
+    --gold-dark:var(--alt-primary);
+    --bg-dark: var(--alt-bg);
+    --card-dark: var(--card-alt);
+    --muted-dark:#445566;
+  }
+
+  /* responsive tweaks */
+  .top-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .hide-mobile{display:inline-block}
+  @media(max-width:640px){ .hide-mobile{display:none} }
+
+  .import-file{display:none}
+  .badge{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;font-weight:700}
+</style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="logo">WF</div>
+      <div>
+        <h1>إنقاص الوزن للرجال — نسخة الويب</h1>
+        <p class="lead">نسخة قابلة للتشغيل فوراً — احفظها كملف HTML وافتحها</p>
+      </div>
+
+      <div class="top-controls">
+        <div class="theme-toggle small">
+          ثيم:
+          <select id="themeSelect" class="small" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--gold);padding:6px;border-radius:8px">
+            <option value="dark">أسود × ذهبي</option>
+            <option value="alt">أزرق × فضي</option>
+          </select>
+        </div>
+        <button class="btn ghost" id="btnAbout">حول</button>
+        <button class="btn" id="btnExport">تصدير CSV</button>
+        <button class="btn secondary" id="btnReset">مسح</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- LEFT: Dashboard -->
+      <div>
+        <div class="card">
+          <div class="top-row">
+            <div>
+              <h2 style="margin:0">لوحة التحكم</h2>
+              <div class="small">موجز يومي ومتابعة التقدم</div>
+            </div>
+            <div style="margin-left:auto" class="small">احفظ تقدمك محلياً أو استعمل استيراد/تصدير للنسخ الاحتياطي</div>
+          </div>
+
+          <div class="stats" style="margin-top:8px;">
+            <div class="stat">
+              <div class="label">الوزن الحالي</div>
+              <div class="value" id="currentWeight">- كجم</div>
+            </div>
+            <div class="stat">
+              <div class="label">الـ BMI</div>
+              <div class="value" id="bmiVal">-</div>
+            </div>
+            <div class="stat">
+              <div class="label">الوضع</div>
+              <div class="value" id="statusVal">-</div>
+            </div>
+          </div>
+
+          <hr style="border:none;height:10px;background:transparent">
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px">
+              <label>أضف قياس وزن جديد (كجم)</label>
+              <div style="display:flex;gap:8px">
+                <input id="inputWeight" type="number" placeholder="مثال: 80.5" step="0.1" />
+                <input id="weightDate" type="date" style="max-width:160px" />
+                <button class="btn" id="addWeightBtn">أضف</button>
+              </div>
+            </div>
+
+            <div style="flex:1;min-width:220px">
+              <label>السعرات اليومية المستهدفة (اختياري)</label>
+              <div style="display:flex;gap:8px">
+                <input id="targetCalories" type="number" placeholder="مثلاً: 2000" />
+                <button class="btn secondary" id="calcGoalBtn">احسب هدف</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="card">
+            <canvas id="weightChart" height="120"></canvas>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn secondary" id="openExercises">خطط التمارين</button>
+            <button class="btn secondary" id="openCalorie">حارق السعرات</button>
+            <button class="btn ghost" id="btnImport">استيراد CSV</button>
+            <input type="file" id="importFile" class="import-file" accept=".csv" />
+          </div>
+        </div>
+
+        <!-- Exercises section full -->
+        <div class="card" style="margin-top:12px">
+          <div class="section-title">
+            <h3 style="margin:0">التمارين</h3>
+            <div class="small">اختر تمريناً وابدأ العدّاد المتحرك</div>
+          </div>
+
+          <div class="ex-list" id="exList">
+            <!-- injected -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Settings & quick panels -->
+      <div>
+        <div class="panel card">
+          <h3 style="margin-top:0">الإعدادات الشخصية</h3>
+          <form id="settingsForm">
+            <label>الاسم</label>
+            <input id="name" type="text" placeholder="مثلاً: أحمد" />
+            <label>الطول (سم)</label>
+            <input id="height" type="number" min="100" max="230" />
+            <label>العمر</label>
+            <input id="age" type="number" min="10" max="120" />
+            <label>الهدف — وزن (كجم)</label>
+            <input id="targetWeight" type="number" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn" type="submit">حفظ الإعدادات</button>
+              <button class="btn secondary" type="button" id="btnClearSettings">مسح الإعدادات</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel card">
+          <h3 style="margin-top:0">حساب السعرات</h3>
+          <label>الوزن الحالي (كجم)</label>
+          <input id="calWeight" type="number" />
+          <label>المدة (دقائق)</label>
+          <input id="calMins" type="number" />
+          <label>الشدة</label>
+          <select id="calIntensity">
+            <option value="4">خفيف (مشي)</option>
+            <option value="6">متوسط</option>
+            <option value="8">عالٍ</option>
+          </select>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="calcBurn">احسب</button>
+            <button class="btn secondary" id="calReset">مسح</button>
+          </div>
+          <div id="burnResult" class="small" style="margin-top:8px"></div>
+        </div>
+
+        <div class="panel card">
+          <h3 style="margin-top:0">تشغيل موسيقى تحفيزية</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn" id="playMusic">تشغيل</button>
+            <button class="btn secondary" id="stopMusic">إيقاف</button>
+          </div>
+          <div class="small" style="margin-top:8px">موسيقى افتراضية لتحفيز التمرين (تعمل من الإنترنت)</div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer>
+      تم الإنشاء بواسطة مولّد — حفظ محلي. للتخزين السحابي أقدر أضيف Firebase لاحقاً.
+    </footer>
+  </div>
+
+  <!-- Modal template for timer -->
+  <div id="modalRoot"></div>
+
+<script>
+/* ------------------------------
+   Data keys and utilities
+--------------------------------*/
+const LS = {
+  settings: 'wt_settings_v2',
+  weights: 'wt_weights_v2',
+  theme: 'wt_theme_v2'
+};
+
+function fmtDate(d=new Date()){
+  const y=d.getFullYear(), m=('0'+(d.getMonth()+1)).slice(-2), day=('0'+d.getDate()).slice(-2);
+  return `${y}-${m}-${day}`;
+}
+
+/* ------------------------------
+   Exercises dataset (GIFs + images)
+   Sources: public GIFs & images via CDN/unsplash/giphy
+--------------------------------*/
+const EXERCISES = [
+  { id:'pushups', name:'تمرين الضغط', desc:'تقوية الصدر والذراعين والجذع', duration:45, reps:12, img:'https://media.giphy.com/media/l0HlNQ03J5JxX6lva/giphy.gif' },
+  { id:'crunches', name:'تمارين البطن', desc:'تمرين للبطن وعضلات الجذع', duration:40, reps:20, img:'https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif' },
+  { id:'squats', name:'القرفصاء (Squats)', desc:'تمرين للفخذين والمؤخرة', duration:50, reps:15, img:'https://images.unsplash.com/photo-1594737625785-9b3b5b1d0f7a?w=800&q=80&auto=format&fit=crop' },
+  { id:'jumping', name:'Jumping Jacks', desc:'تمارين لرفع النبض وحرق السعرات', duration:60, reps:30, img:'https://media.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif' },
+  { id:'plank', name:'Plank', desc:'تقوية الجذع وتحسين الثبات', duration:60, reps:1, img:'https://media.giphy.com/media/3oEdv3Ul4d2q9cJp9O/giphy.gif' },
+  { id:'burpees', name:'Burpees', desc:'تمرين كامل للجسم لحرق سريع', duration:50, reps:12, img:'https://images.unsplash.com/photo-1546484959-f5b09d1f4cd6?w=800&q=80&auto=format&fit=crop' }
+];
+
+/* ------------------------------
+   Storage helpers
+--------------------------------*/
+function loadSettings(){ try{ return JSON.parse(localStorage.getItem(LS.settings)) || {}; }catch(e){return {};}}
+function saveSettings(s){ localStorage.setItem(LS.settings, JSON.stringify(s)); }
+function loadWeights(){ try{ return JSON.parse(localStorage.getItem(LS.weights)) || []; }catch(e){return [];} }
+function saveWeights(a){ localStorage.setItem(LS.weights, JSON.stringify(a)); }
+function saveTheme(t){ localStorage.setItem(LS.theme, t); }
+function loadTheme(){ return localStorage.getItem(LS.theme) || 'dark'; }
+
+/* ------------------------------
+   Init UI, render exercises
+--------------------------------*/
+function el(id){ return document.getElementById(id); }
+
+function renderExercises(){
+  const container = el('exList');
+  container.innerHTML = '';
+  EXERCISES.forEach(ex=>{
+    const div = document.createElement('div');
+    div.className = 'exercise';
+    div.innerHTML = `
+      <img src="${ex.img}" alt="${ex.name}" loading="lazy" />
+      <div class="ex-body">
+        <h4>${ex.name}</h4>
+        <p>${ex.desc}</p>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" data-start="${ex.id}">ابدأ</button>
+          <button class="btn secondary" data-add="${ex.id}">أضف للروتين</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+  // listeners
+  container.querySelectorAll('button[data-start]').forEach(b=> b.addEventListener('click', (e)=> startExercise(e.target.getAttribute('data-start'))));
+  container.querySelectorAll('button[data-add]').forEach(b=> b.addEventListener('click', (e)=> addToRoutine(e.target.getAttribute('data-add'))));
+}
+
+/* ------------------------------
+   Chart (Chart.js)
+--------------------------------*/
+let chart=null;
+function initChart(){
+  const ctx = el('weightChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:[], datasets:[{ label:'الوزن (كجم)', data:[], borderWidth:2, tension:0.25, fill:false }]},
+    options:{
+      responsive:true,
+      scales:{ x:{display:true}, y:{display:true, beginAtZero:false} }
+    }
+  });
+}
+function updateChart(){
+  const arr = loadWeights().sort((a,b)=>a.date.localeCompare(b.date));
+  chart.data.labels = arr.map(x=>x.date);
+  chart.data.datasets[0].data = arr.map(x=>x.weight);
+  chart.update();
+}
+
+/* ------------------------------
+   Update Stats UI
+--------------------------------*/
+function updateStatsUI(){
+  const weights = loadWeights().sort((a,b)=>a.date.localeCompare(b.date));
+  const current = weights.length ? weights[weights.length-1].weight : null;
+  el('currentWeight').innerText = current ? (current + ' كجم') : '- كجم';
+  const s = loadSettings();
+  if(current && s.height){
+    const h = s.height/100;
+    const bmi = +(current/(h*h)).toFixed(1);
+    el('bmiVal').innerText = bmi;
+    let status='-';
+    if(bmi<18.5) status='نحيف';
+    else if(bmi<25) status='طبيعي';
+    else if(bmi<30) status='وزن زائد';
+    else status='سمنة';
+    el('statusVal').innerText = status;
+  } else {
+    el('bmiVal').innerText = '-';
+    el('statusVal').innerText = '-';
+  }
+  updateChart();
+}
+
+/* ------------------------------
+   Add weight
+--------------------------------*/
+el('addWeightBtn').addEventListener('click', ()=>{
+  const v = parseFloat(el('inputWeight').value);
+  if(!v || v<=0){ alert('ادخل وزن صحيح'); return; }
+  const date = el('weightDate').value || fmtDate();
+  const arr = loadWeights();
+  const idx = arr.findIndex(x=>x.date===date);
+  if(idx>=0) arr[idx].weight = v;
+  else arr.push({date,weight:v});
+  saveWeights(arr);
+  el('inputWeight').value='';
+  el('weightDate').value='';
+  updateStatsUI();
+  alert('تم حفظ القياس');
+});
+
+/* ------------------------------
+   Settings form
+--------------------------------*/
+el('settingsForm').addEventListener('submit',(e)=>{
+  e.preventDefault();
+  const s = {
+    name: el('name').value || '',
+    height: parseInt(el('height').value||0),
+    age: parseInt(el('age').value||0),
+    targetWeight: parseFloat(el('targetWeight').value||0)
+  };
+  if(!s.height){ alert('ادخل طول صحيح'); return; }
+  saveSettings(s);
+  alert('تم حفظ الإعدادات');
+  populateSettingsUI();
+  updateStatsUI();
+});
+el('btnClearSettings').addEventListener('click', ()=>{
+  if(confirm('مسح الإعدادات؟')){ localStorage.removeItem(LS.settings); populateSettingsUI(); updateStatsUI(); }
+});
+function populateSettingsUI(){
+  const s = loadSettings();
+  el('name').value = s.name||'';
+  el('height').value = s.height||'';
+  el('age').value = s.age||'';
+  el('targetWeight').value = s.targetWeight||'';
+  el('calWeight').value = loadWeights().length ? loadWeights().slice(-1)[0].weight : (s.targetWeight||'');
+}
+
+/* ------------------------------
+   Calorie calc
+--------------------------------*/
+el('calcBurn').addEventListener('click', ()=>{
+  const w = parseFloat(el('calWeight').value);
+  const mins = parseFloat(el('calMins').value);
+  const met = parseFloat(el('calIntensity').value);
+  if(!w||!mins){ alert('ادخل الوزن والمدة'); return; }
+  const kcal = Math.round(met * w * (mins/60));
+  el('burnResult').innerHTML = `تقدير السعرات المحروقة: <strong>${kcal} kcal</strong>`;
+});
+
+/* ------------------------------
+   Exercises: start timer modal
+--------------------------------*/
+function startExercise(id){
+  const ex = EXERCISES.find(x=>x.id===id);
+  if(!ex) return;
+  const root = el('modalRoot');
+  root.innerHTML = `
+    <div class="overlay">
+      <div class="modal">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3>${ex.name}</h3>
+          <button id="closeModal" class="btn ghost">✕</button>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+          <img src="${ex.img}" style="width:180px;height:120px;object-fit:cover;border-radius:10px" />
+          <div style="flex:1;text-align:right">
+            <div class="small">التكرارات: ${ex.reps}</div>
+            <div class="small" style="margin-top:6px">المدة: ${ex.duration} ثانية</div>
+            <div style="margin-top:12px">
+              <div id="timerDisplay" class="timer-large">${ex.duration}</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="btnStartTimer" class="btn">ابدأ</button>
+                <button id="btnPauseTimer" class="btn secondary">ايقاف/استئناف</button>
+                <button id="btnStopTimer" class="btn ghost">انهاء</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  let remaining = ex.duration;
+  let t=null;
+  const updateDisplay = ()=> el('timerDisplay').innerText = remaining;
+  function start(){
+    if(t) return;
+    t = setInterval(()=>{
+      remaining--;
+      updateDisplay();
+      if(remaining<=0){ clearInterval(t); t=null; alert('انتهى التمرين — أحسنت!'); root.innerHTML=''; }
+    },1000);
+  }
+  function pause(){
+    if(t){ clearInterval(t); t=null; } else start();
+  }
+  function stop(){ if(t) clearInterval(t); root.innerHTML=''; }
+  el('btnStartTimer').onclick = start;
+  el('btnPauseTimer').onclick = pause;
+  el('btnStopTimer').onclick = stop;
+  el('closeModal').onclick = ()=>{ if(confirm('انهاء التمرين؟')) root.innerHTML=''; };
+}
+
+/* ------------------------------
+   Routine (simple) — save to weights? just demo
+--------------------------------*/
+function addToRoutine(id){
+  alert('تمت إضافة التمرين للروتين (يمكن تعديل لاحقاً).');
+}
+
+/* ------------------------------
+   Music controls (audio)
+--------------------------------*/
+const musicUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+let audio = new Audio(musicUrl);
+el('playMusic').addEventListener('click', ()=> { audio.loop=true; audio.play().catch(()=>alert('لا يمكن تشغيل الصوت أوفلاين')); });
+el('stopMusic').addEventListener('click', ()=> { audio.pause(); audio.currentTime=0; });
+
+/* ------------------------------
+   Export / Import CSV
+--------------------------------*/
+el('btnExport').addEventListener('click', ()=> {
+  const arr = loadWeights().sort((a,b)=>a.date.localeCompare(b.date));
+  if(!arr.length){ alert('لا توجد بيانات للتصدير'); return; }
+  let csv = 'date,weight\\n';
+  arr.forEach(r=> csv += `${r.date},${r.weight}\\n`);
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'weights.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+el('btnImport').addEventListener('click', ()=> el('importFile').click());
+el('importFile').addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=> {
+    const text = reader.result;
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    const arr = [];
+    for(let i=1;i<lines.length;i++){
+      const parts = lines[i].split(',');
+      if(parts.length>=2) arr.push({date:parts[0].trim(), weight:parseFloat(parts[1])});
+    }
+    if(arr.length){ saveWeights(arr); updateStatsUI(); alert('تم استيراد البيانات'); }
+  };
+  reader.readAsText(f);
+});
+
+/* ------------------------------
+   Reset data
+--------------------------------*/
+el('btnReset').addEventListener('click', ()=>{
+  if(confirm('هل تريد مسح كل البيانات (الإعدادات والوزن)؟')){ localStorage.removeItem(LS.weights); localStorage.removeItem(LS.settings); updateStatsUI(); populateSettingsUI(); alert('تم المسح'); }
+});
+
+/* ------------------------------
+   About modal
+--------------------------------*/
+el('btnAbout').addEventListener('click', ()=> alert('نسخة ويب - إنقاص الوزن للرجال\\nمحرر: مولّد الكود\\nيمكنك تعديل الصور والنصوص وحفظ الملف كـ HTML لتشغيله محلياً.'));
+
+/* ------------------------------
+   Theme toggle
+--------------------------------*/
+function applyTheme(t){
+  const root = document.getElementById('app');
+  if(t==='alt') root.classList.add('alt'); else root.classList.remove('alt');
+  // adapt select color
+  el('themeSelect').value = t;
+  saveTheme(t);
+}
+el('themeSelect').addEventListener('change', (e)=> applyTheme(e.target.value));
+
+/* ------------------------------
+   Init
+--------------------------------*/
+function init(){
+  renderExercises();
+  initChart();
+  populateSettingsUI();
+  updateStatsUI();
+  // default date
+  el('weightDate').value = fmtDate();
+  // theme
+  const theme = loadTheme();
+  applyTheme(theme);
+}
+init();
+</script>
+</body>
+</html>
